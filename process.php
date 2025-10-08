@@ -1,19 +1,30 @@
 <?php
 // process.php - Handles form submission and price calculation
 
+// Configuration constants for project type adjustments
+const SHORT_TERM_ADJUSTMENT = 1.15; // 15% increase
+const LONG_TERM_ADJUSTMENT = 0.90;  // 10% decrease
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $service = $_POST['service'] ?? '';
     $quantity = $_POST['quantity'] ?? 1;
     $location = $_POST['location'] ?? '';
+    $projectType = $_POST['project_type'] ?? '';
 
     // Validate inputs
-    if (empty($service) || empty($quantity)) {
+    if (empty($service) || empty($quantity) || empty($projectType)) {
         header('Location: index.php?error=missing_data');
         exit;
     }
 
     if (!is_numeric($quantity) || $quantity < 1) {
         header('Location: index.php?error=invalid_quantity');
+        exit;
+    }
+
+    // Validate project type
+    if (!in_array($projectType, ['short_term', 'long_term'])) {
+        header('Location: index.php?error=invalid_project_type');
         exit;
     }
 
@@ -72,9 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Calculate total
     $total = $unitPrice * $quantity;
 
+    // Apply project type adjustment
+    $adjustment = ($projectType === 'short_term') ? SHORT_TERM_ADJUSTMENT : LONG_TERM_ADJUSTMENT;
+    $adjustedTotal = $total * $adjustment;
+
     // Format numbers for display
     $formattedUnitPrice = number_format($unitPrice, 2);
     $formattedTotal = number_format($total, 2);
+    $formattedAdjustedTotal = number_format($adjustedTotal, 2);
 
     // Redirect back to index.php with results
     $params = http_build_query([
@@ -82,6 +98,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'unit_price' => $formattedUnitPrice,
         'quantity' => $quantity,
         'total' => $formattedTotal,
+        'adjusted_total' => $formattedAdjustedTotal,
+        'project_type' => $projectType,
         'location' => $location,
         'currency' => $currency
     ]);

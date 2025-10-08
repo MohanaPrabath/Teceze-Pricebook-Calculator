@@ -80,6 +80,15 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label for="project_type">Project Type:</label>
+                <select name="project_type" id="project_type" required>
+                    <option value="">-- Choose Project Type --</option>
+                    <option value="short_term">Short-Term Project</option>
+                    <option value="long_term">Long-Term Project</option>
+                </select>
+            </div>
+
             <button type="submit" class="calculate-btn">Calculate Price</button>
         </form>
 
@@ -92,6 +101,16 @@
             $total = htmlspecialchars($_GET['total']);
             $location = isset($_GET['location']) ? htmlspecialchars($_GET['location']) : 'Not specified';
             $currency = isset($_GET['currency']) ? htmlspecialchars($_GET['currency']) : 'USD';
+            $projectType = isset($_GET['project_type']) ? htmlspecialchars($_GET['project_type']) : '';
+            $adjustedTotal = isset($_GET['adjusted_total']) ? htmlspecialchars($_GET['adjusted_total']) : '';
+
+            // Determine project type display name
+            $projectTypeDisplay = '';
+            if ($projectType === 'short_term') {
+                $projectTypeDisplay = 'Short-Term';
+            } elseif ($projectType === 'long_term') {
+                $projectTypeDisplay = 'Long-Term';
+            }
 
             echo "
             <div class='result'>
@@ -102,7 +121,15 @@
                     <p><strong>Currency:</strong> $currency</p>
                     <p><strong>Unit Price:</strong> $unitPrice</p>
                     <p><strong>Quantity:</strong> $quantity</p>
-                    <p class='total'><strong>Total Price:</strong> $total $currency</p>
+                    <p><strong>Project Type:</strong> $projectTypeDisplay Project</p>
+                    <p class='total'><strong>Base Total:</strong> $total $currency</p>";
+
+            if (!empty($adjustedTotal)) {
+                echo "
+                    <p class='adjusted-total'><strong>Adjusted Total for $projectTypeDisplay Project:</strong> $adjustedTotal $currency</p>";
+            }
+
+            echo "
                 </div>
             </div>";
         }
